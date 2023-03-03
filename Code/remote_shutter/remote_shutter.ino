@@ -25,8 +25,8 @@ int yVal = 0;
 boolean buttonState = false;
 #define buttonPin D2
 
-//set length: shutter open for a set time, blub  on camera
-//mutli exposure: shutter open for a set time at a set interval, blub on camera
+//set length: shutter open for a set time, blub  on camera, manual focus
+//mutli exposure: shutter open for a set time at a set interval, blub on camera, manual focus
 //timer: shutter opens aftern a countdown, shutter set on camera, possible focus
 //remote shutter: when you hit the button the shutter triggers, shutter set on camera, possible option for focus 
 String menuOptions[] = {"set length", "mutli exposures", "timer", "remote shutter"};
@@ -39,6 +39,10 @@ int numIndex = 0;
 int expoLengthM = 0;
 int expoLengthS = 0;
 int expoLengthMs = 0;
+
+int delayLengthM = 0;
+int delayLengthS = 0;
+int delayLengthMs = 0;
 
 bool willFocus = 0;
 
@@ -86,43 +90,20 @@ void loop() {
   //display the options
   switch(currentMenu){
     case 4:
-      for(int i = 0; i < 4; i++){
-        display.setCursor(2,19+(i*12));
-        if(i == selected){
-          display.setTextColor(SSD1306_INVERSE);
-          display.fillRect(0,17+i*12,128,12,SSD1306_WHITE);
-        }else{
-          display.setTextColor(SSD1306_WHITE);
-        }
-        display.print(menuOptions[i]);
-      }
-      if(yVal>950){
-        selected --;
-        if(selected < 0){
-          selected = 3;
-        }
-        delay(100);
-      }
-      if(yVal<80){
-        selected ++;
-        if(selected > 3){
-          selected = 0;
-        }
-        delay(100);
-      }
-      break;
-    case 3:
-      
-      break;
-    case 2:
-      
-      break;
-    case 1:
-      
+      mainMenu();
       break;
     case 0:
       setLength();
       break; 
+    case 1:
+      miltiExp();
+      break;
+    case 2:
+      picTiemr();
+      break;
+    case 3:
+      remoteShutter();
+      break;
   }
 
   //display.drawPixel(map(xVal,0,1023,0,128), 63 - map(yVal,0,1023,0,64), SSD1306_WHITE);
@@ -157,13 +138,43 @@ void longOff(){
   digitalWrite(shutterPin,LOW);
 }
 
+//writes the current screen to the top of the oled screen
 void oledHeader(){
   display.setCursor(3,3);
   display.print(menus[currentMenu]);
 }
 
+void mainMenu(){
+  for(int i = 0; i < 4; i++){
+    display.setCursor(2,19+(i*12));
+    if(i == selected){
+      display.setTextColor(SSD1306_INVERSE);
+      display.fillRect(0,17+i*12,128,12,SSD1306_WHITE);
+    }else{
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.print(menuOptions[i]);
+  }
+  if(yVal>950){
+    selected --;
+    if(selected < 0){
+      selected = 3;
+    }
+    delay(100);
+  }
+  if(yVal<80){
+    selected ++;
+    if(selected > 3){
+      selected = 0;
+    }
+    delay(100);
+  }
+}
+
 //takes a photo with a two second delay and keeps the shutter open for as long as the user inputs
+//somewhat tested
 void setLength(){
+  //when the joystick is moved right and left change numIndex
   if(xVal < 80){
     numIndex --;
     if(numIndex<-1){
@@ -178,6 +189,7 @@ void setLength(){
     }
     delay(80);
   }
+  //when the joystick is moved down decrease the value at numIndex with the lowest being 0
   if(yVal < 80){
     switch (numIndex){
       case 0:
@@ -197,6 +209,7 @@ void setLength(){
         break;
     }
   }
+  //when the joystick is moved up incrase the value at numIndex
   if(yVal > 950){
     switch (numIndex){
       case 0:
@@ -235,8 +248,8 @@ void setLength(){
     Serial.print("starting");
     delay(2000);
     shutter(false,true);
-    Serial.print(timeToMilli());
-    delay(timeToMilli());
+    Serial.print(expotimeToMilli());
+    delay(expotimeToMilli());
     Serial.print("done");
     longOff();
   }
@@ -249,6 +262,7 @@ void miltiExp(){
 
 //takes a photo after user inputed time delay with option to focus
 void picTiemr(){
+  //when the joystick is moved right and left change numIndex
   if(xVal < 80){
     numIndex --;
     if(numIndex<-1){
@@ -263,21 +277,22 @@ void picTiemr(){
     }
     delay(80);
   }
+  //when the joystick is moved down decrease the value at numIndex with the lowest being 0
   if(yVal < 80){
     switch (numIndex){
       case 0:
-        if(expoLengthM > 0){
-          expoLengthM--;
+        if(delayLengthM > 0){
+          delayLengthM--;
         }
         break;
       case 1:
-        if(expoLengthS > 0){
-          expoLengthS--;
+        if(delayLengthS > 0){
+          delayLengthS--;
         }
         break;
       case 2:
-        if(expoLengthMs > 0){
-          expoLengthMs--;
+        if(delayLengthMs > 0){
+          delayLengthMs--;
         }
         break;
       case 3:
@@ -285,28 +300,33 @@ void picTiemr(){
         break;
     }
   }
+  //when the joystick is moved up incrase the value at numIndex
   if(yVal > 950){
     switch (numIndex){
       case 0:
-        expoLengthM++;
+        delayLengthM++;
         break;
       case 1:
-        expoLengthS++;
+        delayLengthS++;
         break;
       case 2:
-        expoLengthMs++;
+        delayLengthMs++;
         break;
       case 3:
         willFocus = 1;
         break;
     }
   }
+  //displays the current state of needed variables
   display.setCursor(3,20);
-  display.print(expoLengthM);
+  display.print(delayLengthM);
   display.print(":");
-  display.print(expoLengthS);
+  display.print(delayLengthS);
   display.print(":");
-  display.println(expoLengthMs);
+  display.println(delayLengthMs);
+  display.print("   ");
+  display.print(willFocus);
+  //displays what is being changed at a certain numIndex
   switch (numIndex){
     case 0:
       display.print("Mins");
@@ -327,8 +347,8 @@ void picTiemr(){
   if(numIndex == -1 && buttonState == 0){
     display.print(" shooting");
     Serial.print("starting");
-    Serial.print(timeToMilli());
-    delay(timeToMilli());
+    Serial.print(delayTimeToMilli());
+    delay(delayTimeToMilli());
     shutter(willFocus, false);
     Serial.print("done");
   }
@@ -336,17 +356,43 @@ void picTiemr(){
 
 //takes a photo with option to focus
 void remoteShutter(){
+  //when the joystick is moved up try and focus
   if(yVal > 950){
     focus();
   }
-  //add shutter activation
-    
+  //if the joystick is moved to the right or the left change the value of the numIndex
+  if(xVal < 90){
+    numIndex --;
+    if(numIndex<-1){
+      numIndex = 0;
+    }
+    delay(80);
+  }
+  if(xVal > 950){
+    numIndex++;
+    if(numIndex > 0){
+      numIndex = -1;
+    }
+    delay(80);
+  }
+  //if the index is -1 and the button is pressed take a photo
+  if(numIndex == -1 && buttonState == 0){
+    shutter(false,false);
+  }
 }
 //converts minutes seconds and milli seconds into the sum of milli seconds for the delay
-int timeToMilli(){
+int expoTimeToMilli(){
   int total = 0;
   total = expoLengthM * 60 * 1000;
   total = total + expoLengthS * 1000;
   total = total + expoLengthMs;
+  return total;
+}
+
+int delayTimeToMilli(){
+  int total = 0;
+  total = delayLengthM * 60 * 1000;
+  total = total + delayLengthS * 1000;
+  total = total + delayLengthMs;
   return total;
 }
