@@ -27,8 +27,8 @@ boolean buttonState = false;
 
 //set length: shutter open for a set time, blub  on camera
 //mutli exposure: shutter open for a set time at a set interval, blub on camera
-//timer: shutter opens aftern a countdown, shutter set on camera
-//remote shutter: when you hit the button the shutter triggers, shutter set on camera
+//timer: shutter opens aftern a countdown, shutter set on camera, possible focus
+//remote shutter: when you hit the button the shutter triggers, shutter set on camera, possible option for focus 
 String menuOptions[] = {"set length", "mutli exposures", "timer", "remote shutter"};
 int selected = 0;
 
@@ -239,6 +239,17 @@ void setLength(){
     }
 }
 
+void miltiExp(){
+  
+}
+
+void picTiemr(){
+  
+}
+
+void remoteShutter(){
+  
+}
 int timeToMilli(){
   int total = 0;
   total = expoLengthM * 60 * 1000;
