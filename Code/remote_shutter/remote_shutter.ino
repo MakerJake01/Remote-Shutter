@@ -40,6 +40,8 @@ int expoLengthM = 0;
 int expoLengthS = 0;
 int expoLengthMs = 0;
 
+bool willFocus = 0;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -136,7 +138,6 @@ void shutter(bool doFocus, bool longer){
   if(doFocus==true){
     focus();
   }
-  delay(10);
   digitalWrite(shutterPin,HIGH);
   delay(10);
   if(longer == false){
@@ -149,6 +150,7 @@ void focus(){
   digitalWrite(focusPin,HIGH);
   delay(250);
   digitalWrite(focusPin,LOW);
+  delay(10);
 }
 //relases the shutter if its a longer exposure
 void longOff(){
@@ -160,96 +162,187 @@ void oledHeader(){
   display.print(menus[currentMenu]);
 }
 
+//takes a photo with a two second delay and keeps the shutter open for as long as the user inputs
 void setLength(){
   if(xVal < 80){
-      numIndex --;
-      if(numIndex<-1){
-        numIndex = 2;
-      }
-      delay(80);
+    numIndex --;
+    if(numIndex<-1){
+      numIndex = 2;
     }
-    if(xVal > 950){
-      numIndex++;
-      if(numIndex > 2){
-        numIndex = -1;
-      }
-      delay(80);
+    delay(80);
+  }
+  if(xVal > 950){
+    numIndex++;
+    if(numIndex > 2){
+      numIndex = -1;
     }
-    if(yVal < 80){
-      switch (numIndex){
-        case 0:
-          if(expoLengthM > 0){
-            expoLengthM--;
-          }
-          break;
-        case 1:
-          if(expoLengthS > 0){
-            expoLengthS--;
-          }
-          break;
-        case 2:
-          if(expoLengthMs > 0){
-            expoLengthMs--;
-          }
-          break;
-      }
-    }
-    if(yVal > 950){
-      switch (numIndex){
-        case 0:
-          expoLengthM++;
-          break;
-        case 1:
-          expoLengthS++;
-          break;
-        case 2:
-          expoLengthMs++;
-          break;
-      }
-    }
-    display.setCursor(3,20);
-    display.print(expoLengthM);
-    display.print(":");
-    display.print(expoLengthS);
-    display.print(":");
-    display.println(expoLengthMs);
+    delay(80);
+  }
+  if(yVal < 80){
     switch (numIndex){
       case 0:
-        display.print("Mins");
+        if(expoLengthM > 0){
+          expoLengthM--;
+        }
         break;
       case 1:
-        display.print("Secs");
+        if(expoLengthS > 0){
+          expoLengthS--;
+        }
         break;
       case 2:
-        display.print("Millis");
-        break;
-      case -1:
-        display.print("Okay?");
+        if(expoLengthMs > 0){
+          expoLengthMs--;
+        }
         break;
     }
-    if(numIndex == -1 && buttonState == 0){
-      display.print(" shooting");
-      Serial.print("starting");
-      delay(2000);
-      shutter(false,true);
-      Serial.print(timeToMilli());
-      delay(timeToMilli());
-      Serial.print("done");
-      longOff();
+  }
+  if(yVal > 950){
+    switch (numIndex){
+      case 0:
+        expoLengthM++;
+        break;
+      case 1:
+        expoLengthS++;
+        break;
+      case 2:
+        expoLengthMs++;
+        break;
     }
+  }
+  display.setCursor(3,20);
+  display.print(expoLengthM);
+  display.print(":");
+  display.print(expoLengthS);
+  display.print(":");
+  display.println(expoLengthMs);
+  switch (numIndex){
+    case 0:
+      display.print("Mins");
+      break;
+    case 1:
+      display.print("Secs");
+      break;
+    case 2:
+      display.print("Millis");
+      break;
+    case -1:
+      display.print("Okay?");
+      break;
+  }
+  if(numIndex == -1 && buttonState == 0){
+    display.print(" shooting");
+    Serial.print("starting");
+    delay(2000);
+    shutter(false,true);
+    Serial.print(timeToMilli());
+    delay(timeToMilli());
+    Serial.print("done");
+    longOff();
+  }
 }
 
+//after two seconds takes a set number of photos and keeps the shutter open for a set time with a set delay inbetween every photo
 void miltiExp(){
   
 }
 
+//takes a photo after user inputed time delay with option to focus
 void picTiemr(){
-  
+  if(xVal < 80){
+    numIndex --;
+    if(numIndex<-1){
+      numIndex = 3;
+    }
+    delay(80);
+  }
+  if(xVal > 950){
+    numIndex++;
+    if(numIndex > 3){
+      numIndex = -1;
+    }
+    delay(80);
+  }
+  if(yVal < 80){
+    switch (numIndex){
+      case 0:
+        if(expoLengthM > 0){
+          expoLengthM--;
+        }
+        break;
+      case 1:
+        if(expoLengthS > 0){
+          expoLengthS--;
+        }
+        break;
+      case 2:
+        if(expoLengthMs > 0){
+          expoLengthMs--;
+        }
+        break;
+      case 3:
+        willFocus = 0;
+        break;
+    }
+  }
+  if(yVal > 950){
+    switch (numIndex){
+      case 0:
+        expoLengthM++;
+        break;
+      case 1:
+        expoLengthS++;
+        break;
+      case 2:
+        expoLengthMs++;
+        break;
+      case 3:
+        willFocus = 1;
+        break;
+    }
+  }
+  display.setCursor(3,20);
+  display.print(expoLengthM);
+  display.print(":");
+  display.print(expoLengthS);
+  display.print(":");
+  display.println(expoLengthMs);
+  switch (numIndex){
+    case 0:
+      display.print("Mins");
+      break;
+    case 1:
+      display.print("Secs");
+      break;
+    case 2:
+      display.print("Millis");
+      break;
+     case 3:
+      display.print("Focus");
+      break;
+    case -1:
+      display.print("Okay?");
+      break;
+  }
+  if(numIndex == -1 && buttonState == 0){
+    display.print(" shooting");
+    Serial.print("starting");
+    Serial.print(timeToMilli());
+    delay(timeToMilli());
+    shutter(willFocus, false);
+    Serial.print("done");
+  }
 }
 
+//takes a photo with option to focus
 void remoteShutter(){
-  
+  if(yVal > 950){
+    focus();
+  }
+  //add shutter activation
+    
 }
+//converts minutes seconds and milli seconds into the sum of milli seconds for the delay
 int timeToMilli(){
   int total = 0;
   total = expoLengthM * 60 * 1000;
