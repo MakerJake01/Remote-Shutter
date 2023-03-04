@@ -257,7 +257,8 @@ void setLength(){
 
 //after two seconds takes a set number of photos and keeps the shutter open for a set time with a set delay inbetween every photo
 void miltiExp(){
-  
+  //boilerplate input changing
+  //for loop to take photo
 }
 
 //takes a photo after user inputed time delay with option to focus
