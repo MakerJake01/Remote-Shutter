@@ -35,16 +35,24 @@ int selected = 0;
 String menus[] = {"set length", "mutli exposures", "timer", "remote shutter","main menu"};
 int currentMenu = 4;
 
+//which value is being edited
 int numIndex = 0;
+
+//how long the shutter will be open
 int expoLengthM = 0;
 int expoLengthS = 0;
 int expoLengthMs = 0;
 
+//delay before pic is taken
 int delayLengthM = 0;
 int delayLengthS = 0;
 int delayLengthMs = 0;
 
+//will the camera try and focus
 bool willFocus = 0;
+
+//Number of photos to take
+int numberToTake = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -259,6 +267,138 @@ void setLength(){
 void miltiExp(){
   //boilerplate input changing
   //for loop to take photo
+  if(xVal < 80){
+    numIndex --;
+    if(numIndex<-1){
+      numIndex = 6;
+    }
+    delay(80);
+  }
+  if(xVal > 950){
+    numIndex++;
+    if(numIndex > 6){
+      numIndex = -1;
+    }
+    delay(80);
+  }
+    if(yVal < 80){
+    switch (numIndex){
+      case 0:
+        if(delayLengthM > 0){
+          delayLengthM--;
+        }
+        break;
+      case 1:
+        if(delayLengthS > 0){
+          delayLengthS--;
+        }
+        break;
+      case 2:
+        if(delayLengthMs > 0){
+          delayLengthMs--;
+        }
+        break;
+      case 3:
+        if(expoLengthM > 0){
+          expoLengthM--;
+        }
+        break;
+      case 4:
+        if(expoLengthS > 0){
+          expoLengthS--;
+        }
+        break;
+      case 5:
+        if(expoLengthMs > 0){
+          expoLengthMs--;
+        }
+        break;
+      case 6:
+        if(numberToTake > 0){
+          numberToTake--;
+        }
+        break;
+    }
+  }
+  //when the joystick is moved up incrase the value at numIndex
+  if(yVal > 950){
+    switch (numIndex){
+      case 0:
+        delayLengthM++;
+        break;
+      case 1:
+        delayLengthS++;
+        break;
+      case 2:
+        delayLengthMs++;
+        break;
+      case 3:
+        expoLengthM++;
+        break;
+      case 4:
+        expoLengthS++;
+        break;
+      case 5:
+        expoLengthMs++;
+        break;
+      case 6:
+        numberToTake++;
+        break;
+    }
+  }
+  display.setCursor(3,20);
+  display.print(delayLengthM);
+  display.print(":");
+  display.print(delayLengthS);
+  display.print(":");
+  display.println(delayLengthMs);
+  display.print("   ");
+  display.print(expoLengthM);
+  display.print(":");
+  display.print(expoLengthS);
+  display.print(":");
+  display.print(expoLengthMs);
+  display.print("   ");
+  display.print(numberToTake);
+  switch (numIndex){
+    case 0:
+      display.print("dMins");
+      break;
+    case 1:
+      display.print("dSecs");
+      break;
+    case 2:
+      display.print("dMillis");
+      break;
+    case 3:
+      display.print("eMins");
+      break;
+    case 4:
+      display.print("eSecs");
+      break;
+    case 5:
+      display.print("eMillis");
+      break;
+    case 6:
+      display.print("# Pics");
+      break;
+    case -1:
+      display.print("dOkay?");
+      break;
+  }
+  if(numIndex == -1 && buttonState == 0){
+    display.print(" shooting");
+    Serial.print("starting");
+    int index = numberToTake;
+    delay(2000);
+    while(index >= 0){
+      shutter(false, true);
+      delay(expoTimeToMilli());
+      longOff();
+      delay(delayTimeToMilli());
+    }
+    Serial.print("done");
+  }
 }
 
 //takes a photo after user inputed time delay with option to focus
