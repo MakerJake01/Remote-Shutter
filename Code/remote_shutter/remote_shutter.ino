@@ -98,6 +98,7 @@ void loop() {
     }else{
       if(numIndex != -1){
         currentMenu = 4;
+        numIndex = 0;
       }
     }
   }
@@ -137,9 +138,9 @@ void shutter(bool doFocus, bool longer){
   digitalWrite(shutterPin,HIGH);
   digitalWrite(redPin, HIGH);
   digitalWrite(greenPin, LOW);
-  delay(10);
+  delay(20);
   if(longer == false){
-    delay(10);  
+    delay(30);  
     digitalWrite(shutterPin,LOW);
     digitalWrite(redPin, LOW);
     digitalWrite(greenPin, HIGH);
@@ -157,6 +158,7 @@ void longOff(){
   digitalWrite(shutterPin,LOW);
   digitalWrite(redPin, LOW);
   digitalWrite(greenPin, HIGH);
+  delay(10);
 }
 
 //writes the current screen to the top of the oled screen
@@ -278,8 +280,6 @@ void setLength(){
 
 //after two seconds takes a set number of photos and keeps the shutter open for a set time with a set delay inbetween every photo
 void miltiExp(){
-  //boilerplate input changing
-  //for loop to take photo
   if(xVal < 80){
     numIndex --;
     if(numIndex<-1){
@@ -364,15 +364,16 @@ void miltiExp(){
   display.print(":");
   display.print(delayLengthS);
   display.print(":");
-  display.println(delayLengthMs);
-  display.print("   ");
+  display.print(delayLengthMs);
+  display.setCursor(3,28);
   display.print(expoLengthM);
   display.print(":");
   display.print(expoLengthS);
   display.print(":");
   display.print(expoLengthMs);
   display.print("   ");
-  display.print(numberToTake);
+  display.println(numberToTake);
+  display.setCursor(3,36);
   switch (numIndex){
     case 0:
       display.print("dMins");
@@ -396,7 +397,7 @@ void miltiExp(){
       display.print("# Pics");
       break;
     case -1:
-      display.print("dOkay?");
+      display.print("Okay?");
       break;
   }
   if(numIndex == -1 && buttonState == 0){
@@ -404,10 +405,18 @@ void miltiExp(){
     Serial.print("starting");
     int index = numberToTake;
     delay(2000);
-    while(index >= 0){
+    while(index > -1){
+      Serial.print("open ");
+      Serial.print(index);
+      index--;
       shutter(false, true);
+      Serial.print(expoTimeToMilli());
       delay(expoTimeToMilli());
+      Serial.print("closed");
       longOff();
+      //longOff should already do this but doing it again helps
+      digitalWrite(shutterPin,LOW);
+      Serial.print(delayTimeToMilli());
       delay(delayTimeToMilli());
     }
     Serial.print("done");
@@ -529,9 +538,20 @@ void remoteShutter(){
     }
     delay(80);
   }
+  display.setCursor(3,20);
+  switch (numIndex){
+    case 0:
+      display.print("Ready");
+      break;
+    case -1:
+      display.print("Okay?");
+      break;
+  }
   //if the index is -1 and the button is pressed take a photo
   if(numIndex == -1 && buttonState == 0){
+    delay(10);
     shutter(false,false);
+    delay(30);
   }
 }
 //converts minutes seconds and milli seconds into the sum of milli seconds for the delay
