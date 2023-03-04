@@ -25,6 +25,10 @@ int yVal = 0;
 boolean buttonState = false;
 #define buttonPin D2
 
+//led pins
+#define greenPin D10
+#define redPin D9
+
 //set length: shutter open for a set time, blub  on camera, manual focus
 //mutli exposure: shutter open for a set time at a set interval, blub on camera, manual focus
 //timer: shutter opens aftern a countdown, shutter set on camera, possible focus
@@ -65,6 +69,9 @@ void setup() {
   pinMode(Yjoy, OUTPUT);
 
   pinMode(buttonPin, INPUT);
+
+  pinMode(greenPin, OUTPUT);
+  pinMode(redPin, OUTPUT);
 
   longOff();
   
@@ -128,10 +135,14 @@ void shutter(bool doFocus, bool longer){
     focus();
   }
   digitalWrite(shutterPin,HIGH);
+  digitalWrite(redPin, HIGH);
+  digitalWrite(greenPin, LOW);
   delay(10);
   if(longer == false){
-    delay(240);  
+    delay(10);  
     digitalWrite(shutterPin,LOW);
+    digitalWrite(redPin, LOW);
+    digitalWrite(greenPin, HIGH);
   }
 }
 //pulls the focus pin high and then low
@@ -144,6 +155,8 @@ void focus(){
 //relases the shutter if its a longer exposure
 void longOff(){
   digitalWrite(shutterPin,LOW);
+  digitalWrite(redPin, LOW);
+  digitalWrite(greenPin, HIGH);
 }
 
 //writes the current screen to the top of the oled screen
@@ -256,8 +269,8 @@ void setLength(){
     Serial.print("starting");
     delay(2000);
     shutter(false,true);
-    Serial.print(expotimeToMilli());
-    delay(expotimeToMilli());
+    Serial.print(expoTimeToMilli());
+    delay(expoTimeToMilli());
     Serial.print("done");
     longOff();
   }
